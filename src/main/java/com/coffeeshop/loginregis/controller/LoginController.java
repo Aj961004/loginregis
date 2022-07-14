@@ -20,8 +20,15 @@ public class LoginController {
     @PostMapping("/login")
     public DefaultResponse login(@RequestBody LoginDto loginDto){
         DefaultResponse df = new DefaultResponse();
-        df.setStatus(Boolean.TRUE);
-        df.setMessage("Pendaftaran Berhasil");
+        Optional<RegisterCoffee> optionalRegisterCoffee = loginRepository.findByNoTelpAndPass(loginDto.getNoTelp(), loginDto.getPass());
+
+        if(optionalRegisterCoffee.isPresent()){
+            df.setStatus(Boolean.TRUE);
+            df.setMessage("Login Berhasil");
+        } else {
+            df.setStatus(Boolean.FALSE);
+            df.setMessage("Silahkan Register Terlebih Dahulu");
+        }
         return df;
 
     }
