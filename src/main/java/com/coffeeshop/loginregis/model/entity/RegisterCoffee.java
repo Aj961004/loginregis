@@ -1,10 +1,7 @@
 package com.coffeeshop.loginregis.model.entity;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "tb_user")
@@ -12,8 +9,9 @@ public class RegisterCoffee {
     @Id
     @Column(name = "id_user")
     private Integer idUser;
+    @Column(nullable = false)
     private String pass;
-    @Column(name = "no_telp", length = 13)
+    @Column(name = "no_telp", length = 13, nullable = false)
     private String noTelp;
     private String alamat;
     private String nama;
