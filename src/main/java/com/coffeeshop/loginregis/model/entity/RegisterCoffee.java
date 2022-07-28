@@ -1,20 +1,28 @@
 package com.coffeeshop.loginregis.model.entity;
 
 
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "tb_user")
 public class RegisterCoffee {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "idnyaini")
     @Column(name = "id_user")
     private Integer idUser;
-    @Column(nullable = false)
     private String pass;
-    @Column(name = "no_telp", length = 13, nullable = false)
+    @Column(name = "no_telp")
     private String noTelp;
     private String alamat;
     private String nama;
+
+    private Integer idRole;
+
+
+    @OneToOne
+    @JoinColumn(name = "idRole", insertable = false, updatable = false)
+    private Roles roles;
 
     public Integer getIdUser() {
         return idUser;

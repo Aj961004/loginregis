@@ -1,14 +1,19 @@
 package com.coffeeshop.loginregis.controller;
 
 
-import com.coffeeshop.loginregis.model.dto.DefaultResponse;
-import com.coffeeshop.loginregis.model.dto.DefaultResponses;
-import com.coffeeshop.loginregis.model.dto.LoginDto;
+import com.coffeeshop.loginregis.model.dto.*;
 import com.coffeeshop.loginregis.model.entity.RegisterCoffee;
+import com.coffeeshop.loginregis.model.entity.Roles;
 import com.coffeeshop.loginregis.repository.LoginRepository;
-import org.apache.juli.logging.Log;
+import com.coffeeshop.loginregis.repository.RolesRepository;
+import com.coffeeshop.loginregis.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +25,12 @@ public class LoginController {
 
     @Autowired
     private LoginRepository loginRepository;
+
+    @Autowired
+    private RolesRepository rolesRepository;
+
+    @Autowired
+    private StorageService storageService;
 
     @PostMapping("/login")
     public DefaultResponse login(@RequestBody LoginDto loginDto){
@@ -55,11 +66,14 @@ public class LoginController {
     @PostMapping("/save")
     public DefaultResponses<LoginDto> saveLogin(@RequestBody LoginDto loginDto){
         RegisterCoffee registerCoffee = convertDtoToEntity(loginDto);
+        Roles roles = new Roles();
         DefaultResponses<LoginDto> responses = new DefaultResponses<>();
         Optional<RegisterCoffee> optional = loginRepository.findById(loginDto.getIdUser());
         if(optional.isPresent()){
             responses.setMessages("Error, Data Sudah Tersedia");
         } else {
+            roles.setRole(loginDto.getRole());
+            rolesRepository.save(roles);
             loginRepository.save(registerCoffee);
             responses.setMessages("Berhasil Simpan Data");
             responses.setData(loginDto);
@@ -67,6 +81,33 @@ public class LoginController {
 
         return responses;
     }
+
+    @PostMapping("/upload")
+    public ResponseEntity<Responses> uploadFile(@RequestParam("file") MultipartFile file){
+        String message = "";
+        try {
+            storageService.simpan(file);
+
+            message = "Uploaded the file successfully: " + file.getOriginalFilename();
+            return ResponseEntity.status(HttpStatus.OK).body(new Responses(message));
+        } catch (Exception e) {
+            message = "Could not upload the file: " + file.getOriginalFilename() + "!";
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new Responses(message));
+        }
+    }
+
+//    @PostMapping("/test")
+//    public RegisterCoffee ketikasavegenerate(@RequestBody LoginDto loginDto){
+//        RegisterCoffee reg = new RegisterCoffee();
+//        DefaultResponses<LoginDto> responses = new DefaultResponses<>();
+//        loginRepository.save(reg);
+//        responses.setData(loginDto);
+//        RegisterCoffee reg2 = new RegisterCoffee();
+//        loginRepository.save(reg2);
+//
+//        return reg;
+//    }
+
 
     @PostMapping("/delete")
     public DefaultResponses<LoginDto> deleteLog(@RequestBody LoginDto loginDto){
@@ -84,13 +125,14 @@ public class LoginController {
 
     @GetMapping("/views")
     public List<LoginDto> getListLogin() {
-        List<LoginDto> list = new ArrayList();
+        List<LoginDto> list = new ArrayList<>();
         for (RegisterCoffee m : loginRepository.findAll()) {
             list.add(convertEntityToDto(m));
         }
 
         return list;
     }
+
 
     @PostMapping("/profile")
     public DefaultResponses<LoginDto> profileLog(@RequestBody LoginDto loginDto){
@@ -113,9 +155,6 @@ public class LoginController {
 //        if(optional.isPresent()){
 //            RegisterCoffee dto = optional.get();
 //            dto.getNama()
-//
-//
-//
 //        }
 //    }
 
