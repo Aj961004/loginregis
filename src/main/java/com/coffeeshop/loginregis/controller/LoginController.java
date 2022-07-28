@@ -2,12 +2,14 @@ package com.coffeeshop.loginregis.controller;
 
 
 import com.coffeeshop.loginregis.model.dto.*;
+import com.coffeeshop.loginregis.model.entity.ProfilePhoto;
 import com.coffeeshop.loginregis.model.entity.RegisterCoffee;
 import com.coffeeshop.loginregis.model.entity.Roles;
 import com.coffeeshop.loginregis.repository.LoginRepository;
 import com.coffeeshop.loginregis.repository.RolesRepository;
 import com.coffeeshop.loginregis.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -94,6 +96,15 @@ public class LoginController {
             message = "Could not upload the file: " + file.getOriginalFilename() + "!";
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new Responses(message));
         }
+    }
+
+    @GetMapping("/download/{id}")
+    public ResponseEntity<byte[]> getFile(@PathVariable String id) {
+        ProfilePhoto profilePhoto = storageService.getFile(id);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + profilePhoto.getName() + "\"")
+                .body(profilePhoto.getData());
     }
 
 //    @PostMapping("/test")

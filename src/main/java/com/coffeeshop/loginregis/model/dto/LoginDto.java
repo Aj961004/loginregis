@@ -13,15 +13,6 @@ public class LoginDto {
 
     private String role;
 
-//    private MultipartFile photos;
-//
-//    public MultipartFile getPhotos() {
-//        return photos;
-//    }
-//
-//    public void setPhotos(MultipartFile photos) {
-//        this.photos = photos;
-//    }
 
     public String getRole() {
         return role;
