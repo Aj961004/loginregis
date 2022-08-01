@@ -35,11 +35,11 @@ public class LoginController {
     private StorageService storageService;
 
     @PostMapping("/login")
-    public DefaultResponse login(@RequestBody LoginDto loginDto){
+    public DefaultResponse login(@RequestBody LoginDto loginDto) {
         DefaultResponse df = new DefaultResponse();
         Optional<RegisterCoffee> optionalRegisterCoffee = loginRepository.findByNoTelpAndPass(loginDto.getNoTelp(), loginDto.getPass());
 
-        if(optionalRegisterCoffee.isPresent()){
+        if (optionalRegisterCoffee.isPresent()) {
             df.setStatus(Boolean.TRUE);
             df.setMessage("Login Berhasil");
         } else {
@@ -51,10 +51,10 @@ public class LoginController {
     }
 
     @GetMapping("/byid/{idUser}")
-    public DefaultResponse getByIdRegisterCoffee(@PathVariable Integer idUser){
+    public DefaultResponse getByIdRegisterCoffee(@PathVariable Integer idUser) {
         DefaultResponse df = new DefaultResponse();
         Optional<RegisterCoffee> loregisOpt = loginRepository.findById(idUser);
-        if(loregisOpt.isPresent()){
+        if (loregisOpt.isPresent()) {
             df.setStatus(Boolean.TRUE);
             df.setMessage("Data Terdatar");
         } else {
@@ -66,12 +66,12 @@ public class LoginController {
     }
 
     @PostMapping("/save")
-    public DefaultResponses<LoginDto> saveLogin(@RequestBody LoginDto loginDto){
+    public DefaultResponses<LoginDto> saveLogin(@RequestBody LoginDto loginDto) {
         RegisterCoffee registerCoffee = convertDtoToEntity(loginDto);
         Roles roles = new Roles();
         DefaultResponses<LoginDto> responses = new DefaultResponses<>();
         Optional<RegisterCoffee> optional = loginRepository.findById(loginDto.getIdUser());
-        if(optional.isPresent()){
+        if (optional.isPresent()) {
             responses.setMessages("Error, Data Sudah Tersedia");
         } else {
             roles.setRole(loginDto.getRole());
@@ -85,11 +85,24 @@ public class LoginController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<Responses> uploadFile(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<Responses> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";
         try {
             storageService.simpan(file);
 
+            message = "Uploaded the file successfully: " + file.getOriginalFilename();
+            return ResponseEntity.status(HttpStatus.OK).body(new Responses(message));
+        } catch (Exception e) {
+            message = "Could not upload the file: " + file.getOriginalFilename() + "!";
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new Responses(message));
+        }
+    }
+
+    @PostMapping("/uploadSem")
+    public ResponseEntity<Responses> uploadProfile(@RequestParam("file") MultipartFile file, RegisterCoffee registerCoffee, Roles roles) {
+        String message = "";
+        try {
+            storageService.simpanSemua(file, registerCoffee, roles);
             message = "Uploaded the file successfully: " + file.getOriginalFilename();
             return ResponseEntity.status(HttpStatus.OK).body(new Responses(message));
         } catch (Exception e) {
@@ -121,11 +134,14 @@ public class LoginController {
 
 
     @PostMapping("/delete")
-    public DefaultResponses<LoginDto> deleteLog(@RequestBody LoginDto loginDto){
-        RegisterCoffee registerCoffee =convertDtoToEntity(loginDto);
+    public DefaultResponses<LoginDto> deleteLog(@RequestBody LoginDto loginDto) {
+        RegisterCoffee registerCoffee = convertDtoToEntity(loginDto);
         DefaultResponses<LoginDto> responses = new DefaultResponses<>();
+        Roles role = convertDtoToEntityRole(loginDto);
         Optional<RegisterCoffee> optional = loginRepository.findById(loginDto.getIdUser());
-        if(optional.isPresent()){
+        Optional<Roles> optional1 = rolesRepository.findById(loginDto.getIdRole());
+        if (optional.isPresent() && optional1.isPresent()) {
+            rolesRepository.delete(role);
             loginRepository.delete(registerCoffee);
             responses.setMessages("Data sudah terhapus");
         } else {
@@ -146,10 +162,10 @@ public class LoginController {
 
 
     @PostMapping("/profile")
-    public DefaultResponses<LoginDto> profileLog(@RequestBody LoginDto loginDto){
+    public DefaultResponses<LoginDto> profileLog(@RequestBody LoginDto loginDto) {
         DefaultResponses<LoginDto> responses = new DefaultResponses<>();
         Optional<RegisterCoffee> optional = loginRepository.findById(loginDto.getIdUser());
-        if(optional.isPresent()){
+        if (optional.isPresent()) {
             responses.setMessages("Data Ditemukan");
             responses.setData(convertEntityToDto(optional.get()));
         } else {
@@ -169,7 +185,7 @@ public class LoginController {
 //        }
 //    }
 
-    public RegisterCoffee convertDtoToEntity(LoginDto dto){
+    public RegisterCoffee convertDtoToEntity(LoginDto dto) {
         RegisterCoffee registerCoffee = new RegisterCoffee();
         registerCoffee.setIdUser(dto.getIdUser());
         registerCoffee.setAlamat(dto.getAlamat());
@@ -180,7 +196,21 @@ public class LoginController {
         return registerCoffee;
     }
 
-    public LoginDto convertEntityToDto(RegisterCoffee entity){
+    public Roles convertDtoToEntityRole(LoginDto dto){
+        Roles roles = new Roles();
+        roles.setIdRole(dto.getIdRole());
+        roles.setRole(dto.getRole());
+        return roles;
+    }
+
+    public LoginDto convertEntityToDtoRole(Roles entity){
+        LoginDto dto = new LoginDto();
+        dto.setIdRole(entity.getIdRole());
+        dto.setRole(entity.getRole());
+        return dto;
+    }
+
+    public LoginDto convertEntityToDto(RegisterCoffee entity) {
         LoginDto dto = new LoginDto();
         dto.setIdUser(entity.getIdUser());
         dto.setAlamat(entity.getAlamat());

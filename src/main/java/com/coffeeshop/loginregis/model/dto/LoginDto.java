@@ -1,8 +1,5 @@
 package com.coffeeshop.loginregis.model.dto;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.persistence.Column;
 
 public class LoginDto {
     private String pass;
@@ -13,6 +10,15 @@ public class LoginDto {
 
     private String role;
 
+    private Integer idRole;
+
+    public Integer getIdRole() {
+        return idRole;
+    }
+
+    public void setIdRole(Integer idRole) {
+        this.idRole = idRole;
+    }
 
     public String getRole() {
         return role;
