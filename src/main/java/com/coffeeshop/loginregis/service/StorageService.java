@@ -46,6 +46,21 @@ public class StorageService {
         return loginRepository.save(registerCoffee1);
     }
 
+    public RegisterCoffee updateSemua(MultipartFile file, RegisterCoffee registerCoffee, Roles roles) throws IOException{
+        RegisterCoffee registerCoffee1 = loginRepository.findById(registerCoffee.getIdUser()).get();
+        Roles roles1 = rolesRepository.findById(roles.getIdRole()).get();
+        roles1.setRole(roles.getRole());
+        rolesRepository.save(roles);
+        registerCoffee1.setNama(registerCoffee.getNama());
+        registerCoffee1.setPass(registerCoffee.getPass());
+        registerCoffee1.setAlamat(registerCoffee.getAlamat());
+        registerCoffee1.setNoTelp(registerCoffee.getNoTelp());
+        registerCoffee1.setData(file.getBytes());
+        registerCoffee1.setNamaFile(file.getOriginalFilename());
+        registerCoffee1.setType(file.getContentType());
+        return loginRepository.save(registerCoffee1);
+    }
+
     public ProfilePhoto getFile(String id){
         return profileRepository.findById(id).get();
     }

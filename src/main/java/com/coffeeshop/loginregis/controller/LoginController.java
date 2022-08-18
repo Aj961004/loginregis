@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +85,7 @@ public class LoginController {
         return responses;
     }
 
+
     @PostMapping("/upload")
     public ResponseEntity<Responses> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";
@@ -111,6 +113,20 @@ public class LoginController {
         }
     }
 
+    @PutMapping("/updateSem")
+    public DefaultResponses<RegisterCoffee> updateProf(@RequestParam("file") MultipartFile file, RegisterCoffee registerCoffee, Roles roles) throws IOException {
+        DefaultResponses<RegisterCoffee> responses = new DefaultResponses<>();
+        Optional<RegisterCoffee> optional = loginRepository.findById(registerCoffee.getIdUser());
+        Optional<Roles> optional1 = rolesRepository.findById(roles.getIdRole());
+        if(optional.isPresent() && optional1.isPresent()){
+            storageService.updateSemua(file, registerCoffee, roles);
+            responses.setMessages("Data Berhasil Diupdate");
+        } else {
+            responses.setMessages("Error. Data tidak dapat di update");
+        }
+        return responses;
+    }
+
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> getFile(@PathVariable String id) {
         ProfilePhoto profilePhoto = storageService.getFile(id);
@@ -133,6 +149,7 @@ public class LoginController {
 //    }
 
 
+    // ini bisa untuk delete semuanya
     @PostMapping("/delete")
     public DefaultResponses<LoginDto> deleteLog(@RequestBody LoginDto loginDto) {
         RegisterCoffee registerCoffee = convertDtoToEntity(loginDto);
